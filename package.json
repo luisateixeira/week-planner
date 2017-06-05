@@ -1,0 +1,25 @@
+{
+  "name": "week-planner",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "fs": "^0.0.1-security",
+    "mongodb": "^2.2.28",
+    "ramda": "^0.24.1",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "react-scripts": "0.9.x"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "server": "nodemon api/server.js"
+  }
+}
