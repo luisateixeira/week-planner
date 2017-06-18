@@ -39,7 +39,7 @@ module.exports = function(db) {
     return accum;
   }
 
-  const withRecipes = (recipes) => (planner) => 
+  const withRecipes = (recipes, planner) => 
     Object.keys(planner).reduce(dayReducer(recipes, planner), {});
 
   const getWeeks = () => {
@@ -64,25 +64,27 @@ module.exports = function(db) {
       const { number, year, planner = {} } = body;
       const weeks = json.weeks || {};
       const id = Object.keys(weeks).length;
-      const withRecipesFn = withRecipes(json.recipes);
       return save(json, id, { 
         id, 
         number, 
         year, 
-        planner: getWeekPlanner(withRecipesFn(planner))
+        planner: getWeekPlanner(withRecipes(json.recipes, planner))
       });
     });
   };
 
   const updateWeek = (id, body) => {
-    console.log("afsdf",body);
     return db.get().then(json => {
       const { number, year, planner = {} } = body;
       const weeks = json.weeks || {};
       const week = weeks[id];
-      const withRecipesFn = withRecipes(json.recipes);
       if (week) {
-        return save(json, id, { id, number, year, planner: getWeekPlanner(withRecipesFn(planner))});
+        return save(json, id, { 
+          id, 
+          number, 
+          year, 
+          planner: getWeekPlanner(withRecipes(json.recipes, planner))
+        });
       }
       return Promise.reject(`Week with id ${id} doesn't exist!`);
     });

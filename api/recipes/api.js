@@ -17,6 +17,7 @@ module.exports = function(db) {
   const getRecipeById = (id) => {
     return db.get().then(json => {
       const recipes = json.recipes || {};
+
       if (recipes[id]) {
         return recipes[id];
       }
@@ -26,6 +27,7 @@ module.exports = function(db) {
 
   const createRecipe = (body) => {
     return db.get().then(json => {
+      console.log('body', body);
       const { url, title, description } = body;
       const recipes = json.recipes || {};
       const id = Object.keys(recipes).length;

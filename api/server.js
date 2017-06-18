@@ -6,21 +6,6 @@ const port           = 8000;
 const db             = require('./db');
 const routes         = require('./routes');
 
-/*
-{
-    recipes: {1: recipe, 2: recipe},
-    weeks: [
-        {
-            number: x, // week number,
-            year: xxxx
-            planner: {
-                dom: {recipe: id},
-                ...
-            }
-        }
-    ]
-}
-*/
 
 app.use(bodyParser.urlencoded({
     extended: true

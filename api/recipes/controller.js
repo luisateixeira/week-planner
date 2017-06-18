@@ -14,6 +14,7 @@ module.exports = function(db) {
   };
 
   const createRecipe = (request, response) => {
+    console.log(request);
     api.createRecipe(request.body)
       .then(handleSuccess(response), handleError(response));
   };
