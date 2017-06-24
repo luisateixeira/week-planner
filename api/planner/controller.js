@@ -1,7 +1,11 @@
 module.exports = function(db) {
   const api = require('./api')(db);  
   const handleSuccess = response => result => response.status('200').send(result);
-  const handleError = response => error => response.status('500').send(error);
+  const handleError = response => error => {
+    response.status('500');
+    response.statusMessage = error;
+    response.end();
+  };
 
   const getWeeks = (request, response) => {
     api.getWeeks()
@@ -23,10 +27,16 @@ module.exports = function(db) {
       .then(handleSuccess(response), handleError(response));
   };
 
+  const deleteWeek = (request, response) => {
+    api.deleteWeek(request.params.id)
+      .then(handleSuccess(response), handleError(response));
+  };
+
   return {
     getWeeks,
     getWeekById,
     createWeek,
-    updateWeek
+    updateWeek,
+    deleteWeek
   };
 };

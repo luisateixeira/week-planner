@@ -1,7 +1,11 @@
 module.exports = function(db) {
   const api = require('./api')(db);  
   const handleSuccess = response => result => response.status('200').send(result);
-  const handleError = response => error => response.status('500').send(error);
+  const handleError = response => error => {
+    response.status('500');
+    response.statusMessage = error;
+    response.end();
+  };
 
   const getRecipes = (request, response) => {
     api.getRecipes()
@@ -14,7 +18,6 @@ module.exports = function(db) {
   };
 
   const createRecipe = (request, response) => {
-    console.log(request);
     api.createRecipe(request.body)
       .then(handleSuccess(response), handleError(response));
   };
@@ -24,10 +27,16 @@ module.exports = function(db) {
       .then(handleSuccess(response), handleError(response));
   };
 
+  const deleteRecipe = (request, response) => {
+    api.deleteRecipe(request.params.id)
+      .then(handleSuccess(response), handleError(response));
+  };
+
   return {
     getRecipes,
     getRecipeById,
     createRecipe,
-    updateRecipe
+    updateRecipe,
+    deleteRecipe
   };
 };

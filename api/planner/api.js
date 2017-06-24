@@ -1,6 +1,7 @@
 module.exports = function(db) {
   const R = require('ramda');
-  
+  var cuid = require('cuid');
+
   const save = (json, id, week) => {
       const weeks = json.weeks || {};
       weeks[id] = week;
@@ -10,7 +11,7 @@ module.exports = function(db) {
 
   const getDayPlanner = () => ({
     dinner: {
-      recipe: null
+      week: null
     }
   });
 
@@ -26,26 +27,39 @@ module.exports = function(db) {
     }
   ));
 
-  const mealReducer = (recipes, day) => (accum, meal) => {
+  const mealReducer = (weeks, day) => (accum, meal) => {
     accum[meal] = {
-      recipe: recipes[day[meal].recipeID]
+      week: weeks[day[meal].weekID]
     }
     return accum;
   }
 
-  const dayReducer = (recipes, planner) => (accum, day) => {
+  const dayReducer = (weeks, planner) => (accum, day) => {
     accum[day] = Object.keys(planner[day])
-      .reduce(mealReducer(recipes, planner[day]), {});
+      .reduce(mealReducer(weeks, planner[day]), {});
     return accum;
   }
 
-  const withRecipes = (recipes, planner) => 
-    Object.keys(planner).reduce(dayReducer(recipes, planner), {});
+  const withRecipes = (weeks, planner) => 
+    Object.keys(planner).reduce(dayReducer(weeks, planner), {});
 
   const getWeeks = () => {
     return db.get().then(json => {
       const weeks = json.weeks || {};
-      return Object.keys(weeks).map((key) => weeks[key]);
+      
+      const groupByYear =  Object.keys(weeks).
+        reduce((accum, id) => {
+          const year = weeks[id].year;
+          accum[year] = accum[year] || [];
+          accum[year].push(weeks[id]);
+          accum[year].sort((a,b) => b.number - a.number);
+          return accum;
+        }, {});
+
+      return Object.keys(groupByYear)
+        .sort((a, b) => b - a)
+        .reduce((accum, year) => accum.concat(groupByYear[year]), [])
+  
     });
   };
 
@@ -63,12 +77,24 @@ module.exports = function(db) {
     return db.get().then(json => {
       const { number, year, planner = {} } = body;
       const weeks = json.weeks || {};
-      const id = Object.keys(weeks).length;
-      return save(json, id, { 
+      const id = cuid();
+      
+      const weekByNumber = Object.keys(weeks)
+        .filter((id) => weeks[id].year === body.year)
+        .reduce((accum, id) => {
+          accum[weeks[id].number] = weeks[id];
+          return accum;
+        }, {});
+
+      if (weekByNumber[body.number]) {
+        return Promise.reject(`Week already exists (id: ${weekByNumber[body.number].id})!`);
+      }
+      
+      return save(json, id, {
         id, 
         number, 
         year, 
-        planner: getWeekPlanner(withRecipes(json.recipes, planner))
+        planner: getWeekPlanner(withRecipes(json.weeks, planner))
       });
     });
   };
@@ -83,8 +109,21 @@ module.exports = function(db) {
           id, 
           number, 
           year, 
-          planner: getWeekPlanner(withRecipes(json.recipes, planner))
+          planner: getWeekPlanner(withRecipes(json.weeks, planner))
         });
+      }
+      return Promise.reject(`Week with id ${id} doesn't exist!`);
+    });
+  };
+
+  const deleteWeek = (id) => {
+    return db.get().then(json => {
+      const weeks = json.weeks || {};
+      const week = weeks[id];
+      if (week) {
+        delete weeks[id];
+        json.weeks = weeks;
+        return db.save(json).then(() => week);
       }
       return Promise.reject(`Week with id ${id} doesn't exist!`);
     });
@@ -94,6 +133,7 @@ module.exports = function(db) {
     getWeeks,
     getWeekById,
     createWeek,
-    updateWeek
+    updateWeek,
+    deleteWeek
   };
 };

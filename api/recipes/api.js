@@ -1,5 +1,6 @@
 module.exports = function(db) {
-  
+  var cuid = require('cuid');
+
   const save = (json, id, recipe) => {
       const recipes = json.recipes || {};
       recipes[id] = recipe;
@@ -10,7 +11,15 @@ module.exports = function(db) {
   const getRecipes = () => {
     return db.get().then(json => {
       const recipes = json.recipes || {};
-      return Object.keys(recipes).map((key) => recipes[key]);
+      return Object.keys(recipes)
+        .map((key) => recipes[key])
+        .sort((a, b) => {
+          const titleA = a.title ? a.title.toLowerCase() : '';
+          const titleB = b.title ? b.title.toLowerCase() : '';
+          if(titleA < titleB) return -1;
+          if(titleA > titleB) return 1;
+          return 0;
+        });
     });
   };
 
@@ -27,10 +36,9 @@ module.exports = function(db) {
 
   const createRecipe = (body) => {
     return db.get().then(json => {
-      console.log('body', body);
       const { url, title, description } = body;
       const recipes = json.recipes || {};
-      const id = Object.keys(recipes).length;
+      const id = cuid();
       return save(json, id, { id, title, url, description });
     });
   };
@@ -47,10 +55,24 @@ module.exports = function(db) {
     });
   };
 
+  const deleteRecipe = (id) => {
+    return db.get().then(json => {
+      const recipes = json.recipes || {};
+      const recipe = recipes[id];
+      if (recipe) {
+        delete recipes[id];
+        json.recipes = recipes;
+        return db.save(json).then(() => recipe);
+      }
+      return Promise.reject(`Recipe with id ${id} doesn't exist!`);
+    });
+  };
+
   return {
     getRecipes,
     getRecipeById,
     createRecipe,
-    updateRecipe
+    updateRecipe,
+    deleteRecipe
   };
 };
