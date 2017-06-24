@@ -15,6 +15,10 @@ export const ActionsTypes = {
   UPDATE_RECIPE_START: 'UPDATE_RECIPE_START',
   UPDATE_RECIPE_SUCCEED: 'UPDATE_RECIPE_SUCCEED',
   UPDATE_RECIPE_ERROR: 'UPDATE_RECIPE_ERROR',
+
+  DELETE_RECIPE_START: 'DELETE_RECIPE_START',
+  DELETE_RECIPE_SUCCEED: 'DELETE_RECIPE_SUCCEED',
+  DELETE_RECIPE_ERROR: 'DELETE_RECIPE_ERROR',
 }
 
 export const fetchRecipes = () => ({
@@ -33,8 +37,14 @@ export const createRecipe = payload => ({
   payload
 });
 
-export const updateRecipe = (id, payload) => ({
+export const updateRecipe = (payload) => ({
   type: ActionsTypes.UPDATE_RECIPE_START,
-  id,
   payload
+});
+
+export const deleteRecipe = (id) => ({
+  type: ActionsTypes.DELETE_RECIPE_START,
+  payload: {
+    id
+  }
 });

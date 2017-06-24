@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-import recipes, * as fromRecipes from './recipes/reducer';
+import recipes from './recipes/reducer';
+import weeks from './weeks/reducer';
 
 export default combineReducers({
-  recipes
+  recipes,
+  weeks
 });
-
-export const getRecipeById = (state, id) => fromRecipes.getRecipeById(state.recipes, id);
